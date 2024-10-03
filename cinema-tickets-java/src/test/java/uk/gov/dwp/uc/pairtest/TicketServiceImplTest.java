@@ -1,8 +1,14 @@
 package uk.gov.dwp.uc.pairtest;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import thirdparty.paymentgateway.TicketPaymentService;
+import thirdparty.seatbooking.SeatReservationService;
 import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
@@ -10,10 +16,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.dwp.uc.pairtest.TicketServiceImpl.INVALID_ACCOUNT_ID;
 
-
+@ExtendWith(MockitoExtension.class)
 class TicketServiceImplTest {
 
-    private TicketService ticketService = new TicketServiceImpl();
+    @Mock
+    private TicketPaymentService ticketPaymentService;
+    @Mock
+    private SeatReservationService seatReservationService;
+
+    private final TicketService ticketService = new TicketServiceImpl(ticketPaymentService, seatReservationService);
 
     @Test
     void shouldThrowExceptionIfAccountIdIsNull() {
