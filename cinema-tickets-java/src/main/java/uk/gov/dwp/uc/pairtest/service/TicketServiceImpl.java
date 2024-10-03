@@ -6,8 +6,6 @@ import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 import uk.gov.dwp.uc.pairtest.validator.TicketValidator;
 
-import java.util.Arrays;
-
 public class TicketServiceImpl implements TicketService {
 
     public static final String INVALID_ACCOUNT_ID = "Invalid account ID supplied";
@@ -52,11 +50,15 @@ public class TicketServiceImpl implements TicketService {
             throw new InvalidPurchaseException(NOT_ENOUGH_ADULT_TICKETS);
         }
 
-        final int totalPayment = ticketCalculationService.calculateTotalAmountToPay(ticketTypeRequests);
-        final int totalSeats = ticketCalculationService.calculateTotalSeatsToReserve(ticketTypeRequests);
+        try {
+            final int totalPayment = ticketCalculationService.calculateTotalAmountToPay(ticketTypeRequests);
+            final int totalSeats = ticketCalculationService.calculateTotalSeatsToReserve(ticketTypeRequests);
 
-        ticketPaymentService.makePayment(accountId, totalPayment);
-        seatReservationService.reserveSeat(accountId, totalSeats);
+            ticketPaymentService.makePayment(accountId, totalPayment);
+            seatReservationService.reserveSeat(accountId, totalSeats);
+        } catch (Exception ex) {
+            throw new InvalidPurchaseException("Exception whilst purchasing tickets", ex);
+        }
     }
 
 

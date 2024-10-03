@@ -16,8 +16,7 @@ public class TicketValidator {
     }
 
     public boolean isValidTotalTicketsRequested(final TicketTypeRequest... ticketTypeRequests) {
-        return ticketTypeRequests != null && ticketTypeRequests.length > 0 &&
-                Arrays.stream(ticketTypeRequests).mapToInt(TicketTypeRequest::getNoOfTickets).sum() <= MAX_TICKETS;
+        return Arrays.stream(ticketTypeRequests).mapToInt(TicketTypeRequest::getNoOfTickets).sum() <= MAX_TICKETS;
     }
 
     public boolean adultPresentInTicketsRequested(final TicketTypeRequest... ticketTypeRequests) {

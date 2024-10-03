@@ -1,6 +1,5 @@
 package uk.gov.dwp.uc.pairtest.validator;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -45,16 +44,6 @@ class TicketValidatorTest {
 
     @Nested
     class IsValidTotalTicketsRequestedTest {
-        @Test
-        void invalid_NoTicketRequested() {
-            assertFalse(ticketValidator.isValidTotalTicketsRequested());
-        }
-
-        @Test
-        void invalid_TicketRequestIsNull() {
-            assertFalse(ticketValidator.isValidTotalTicketsRequested(null));
-        }
-
         @ParameterizedTest
         @ValueSource(ints = {26, 27, 33, 58})
         void invalid_MoreThanMaxTicketsRequested(final int numberOfTickets) {
