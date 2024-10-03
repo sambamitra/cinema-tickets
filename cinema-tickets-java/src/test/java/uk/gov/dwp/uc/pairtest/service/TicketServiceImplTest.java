@@ -2,8 +2,6 @@ package uk.gov.dwp.uc.pairtest.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,15 +14,16 @@ import uk.gov.dwp.uc.pairtest.validator.TicketValidator;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
-import static uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest.Type.CHILD;
+import static uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest.Type.*;
 import static uk.gov.dwp.uc.pairtest.service.TicketServiceImpl.*;
-import static uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest.Type.ADULT;
 
 @ExtendWith(MockitoExtension.class)
 class TicketServiceImplTest {
 
     @Mock
     TicketValidator ticketValidator;
+    @Mock
+    TicketCalculationServiceImpl ticketCalculationService;
     @Mock
     private TicketPaymentServiceImpl ticketPaymentService;
     @Mock
@@ -42,7 +41,7 @@ class TicketServiceImplTest {
         });
 
         assertTrue(exception.getMessage().contains(INVALID_ACCOUNT_ID));
-        verifyNoMoreInteractions(ticketValidator, ticketPaymentService, seatReservationService);
+        verifyNoMoreInteractions(ticketValidator, ticketCalculationService, ticketPaymentService, seatReservationService);
     }
 
     @Test
@@ -55,7 +54,7 @@ class TicketServiceImplTest {
         });
 
         assertTrue(exception.getMessage().contains(MAX_TICKET_REQUEST));
-        verifyNoMoreInteractions(ticketValidator, ticketPaymentService, seatReservationService);
+        verifyNoMoreInteractions(ticketValidator, ticketCalculationService, ticketPaymentService, seatReservationService);
     }
 
     @Test
@@ -69,7 +68,7 @@ class TicketServiceImplTest {
         });
 
         assertTrue(exception.getMessage().contains(NO_ADULT_TICKET));
-        verifyNoMoreInteractions(ticketValidator, ticketPaymentService, seatReservationService);
+        verifyNoMoreInteractions(ticketValidator, ticketCalculationService, ticketPaymentService, seatReservationService);
     }
 
     @Test
@@ -84,24 +83,25 @@ class TicketServiceImplTest {
         });
 
         assertTrue(exception.getMessage().contains(NOT_ENOUGH_ADULT_TICKETS));
-        verifyNoMoreInteractions(ticketValidator, ticketPaymentService, seatReservationService);
+        verifyNoMoreInteractions(ticketValidator, ticketCalculationService, ticketPaymentService, seatReservationService);
     }
 
     @Test
-    void shouldMakePaymentAndReserveSeats_WhenRequestIsValid() {
+    void shouldMakePaymentAndReserveSeats_ValidRequest() {
         when(ticketValidator.isValidAccountId(1L)).thenReturn(true);
         when(ticketValidator.isValidTotalTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
         when(ticketValidator.adultPresentInTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
         when(ticketValidator.sufficientAdultTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
+        when(ticketCalculationService.calculateTotalAmountToPay(any(TicketTypeRequest.class))).thenReturn(50);
+        when(ticketCalculationService.calculateTotalSeatsToReserve(any(TicketTypeRequest.class))).thenReturn(2);
 
         final long accountId = 1L;
         ticketService.purchaseTickets(accountId, new TicketTypeRequest(ADULT, 1));
 
-        verify(ticketPaymentService, times(1)).makePayment(accountId, 0);
-        verify(seatReservationService, times(1)).reserveSeat(accountId, 0);
+        verify(ticketPaymentService, times(1)).makePayment(accountId, 50);
+        verify(seatReservationService, times(1)).reserveSeat(accountId, 2);
 
-        verifyNoMoreInteractions(ticketPaymentService);
-        verifyNoMoreInteractions(seatReservationService);
+        verifyNoMoreInteractions(ticketValidator, ticketCalculationService, ticketPaymentService, seatReservationService);
     }
 
 }
