@@ -26,6 +26,12 @@ public class TicketServiceImpl implements TicketService {
         if (accountId == null || accountId <= 0) {
             throw new InvalidPurchaseException(INVALID_ACCOUNT_ID);
         }
+
+        final int totalPayment = 0;
+        final int totalSeats = 0;
+
+        ticketPaymentService.makePayment(accountId, totalPayment);
+        seatReservationService.reserveSeat(accountId, totalSeats);
     }
 
 }
