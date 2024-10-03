@@ -1,6 +1,8 @@
 package uk.gov.dwp.uc.pairtest;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
@@ -31,10 +33,11 @@ class TicketServiceImplTest {
         assertTrue(exception.getMessage().contains(INVALID_ACCOUNT_ID));
     }
 
-    @Test
-    void shouldThrowExceptionIfAccountIdIsLessThanZero() {
+    @ParameterizedTest
+    @ValueSource(longs = {-1L, -2L, -50L, -999L})
+    void shouldThrowExceptionIfAccountIdIsLessThanZero(final Long accountId) {
         Exception exception = assertThrows(InvalidPurchaseException.class, () -> {
-            ticketService.purchaseTickets(-1L, new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1));
+            ticketService.purchaseTickets(accountId, new TicketTypeRequest(TicketTypeRequest.Type.ADULT, 1));
         });
 
         assertTrue(exception.getMessage().contains(INVALID_ACCOUNT_ID));
