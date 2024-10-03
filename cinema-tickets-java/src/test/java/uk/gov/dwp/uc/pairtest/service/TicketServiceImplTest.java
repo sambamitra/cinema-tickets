@@ -87,7 +87,7 @@ class TicketServiceImplTest {
     }
 
     @Test
-    void shouldMakePaymentAndReserveSeats_ValidRequest() {
+    void shouldPurchaseOneTicket_ValidRequest() {
         when(ticketValidator.isValidAccountId(1L)).thenReturn(true);
         when(ticketValidator.isValidTotalTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
         when(ticketValidator.adultPresentInTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
@@ -96,10 +96,30 @@ class TicketServiceImplTest {
         when(ticketCalculationService.calculateTotalSeatsToReserve(any(TicketTypeRequest.class))).thenReturn(2);
 
         final long accountId = 1L;
-        ticketService.purchaseTickets(accountId, new TicketTypeRequest(ADULT, 1));
+        ticketService.purchaseTickets(accountId, new TicketTypeRequest(ADULT, 2));
 
         verify(ticketPaymentService, times(1)).makePayment(accountId, 50);
         verify(seatReservationService, times(1)).reserveSeat(accountId, 2);
+
+        verifyNoMoreInteractions(ticketValidator, ticketCalculationService, ticketPaymentService, seatReservationService);
+    }
+
+    @Test
+    void shouldPurchaseMultipleTickets_ValidRequest() {
+        when(ticketValidator.isValidAccountId(1L)).thenReturn(true);
+        when(ticketValidator.isValidTotalTicketsRequested(any(TicketTypeRequest.class), any(TicketTypeRequest.class))).thenReturn(true);
+        when(ticketValidator.adultPresentInTicketsRequested(any(TicketTypeRequest.class), any(TicketTypeRequest.class))).thenReturn(true);
+        when(ticketValidator.sufficientAdultTicketsRequested(any(TicketTypeRequest.class), any(TicketTypeRequest.class))).thenReturn(true);
+        when(ticketCalculationService.calculateTotalAmountToPay(any(TicketTypeRequest.class), any(TicketTypeRequest.class))).thenReturn(90);
+        when(ticketCalculationService.calculateTotalSeatsToReserve(any(TicketTypeRequest.class), any(TicketTypeRequest.class))).thenReturn(3);
+
+        final long accountId = 1L;
+        ticketService.purchaseTickets(accountId,
+                new TicketTypeRequest(ADULT, 2),
+                new TicketTypeRequest(CHILD, 1));
+
+        verify(ticketPaymentService, times(1)).makePayment(accountId, 90);
+        verify(seatReservationService, times(1)).reserveSeat(accountId, 3);
 
         verifyNoMoreInteractions(ticketValidator, ticketCalculationService, ticketPaymentService, seatReservationService);
     }
