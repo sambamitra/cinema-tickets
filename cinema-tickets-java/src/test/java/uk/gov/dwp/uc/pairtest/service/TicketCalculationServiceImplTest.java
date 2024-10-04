@@ -1,6 +1,5 @@
 package uk.gov.dwp.uc.pairtest.service;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
@@ -8,7 +7,7 @@ import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest.Type.*;
 
-public class TicketCalculationServiceTest {
+public class TicketCalculationServiceImplTest {
 
     private final TicketCalculationService ticketCalculationService = new TicketCalculationServiceImpl();
 
