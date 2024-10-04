@@ -25,13 +25,13 @@ class TicketValidatorTest {
         }
 
         @Test
-        void invalid_accountIdIsZeero() {
+        void invalid_accountIdIsZero() {
             assertFalse(ticketValidator.isValidAccountId(0L));
         }
 
         @ParameterizedTest
         @ValueSource(longs = {-1L, -2L, -50L, -999L})
-        void invalid_accountIdIsLessThanZeero(final Long accountId) {
+        void invalid_accountIdIsLessThanZero(final Long accountId) {
             assertFalse(ticketValidator.isValidAccountId(accountId));
         }
 

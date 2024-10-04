@@ -25,14 +25,14 @@ public final class TicketTypeRequest {
     public enum Type {
         ADULT(25), CHILD(15) , INFANT(0);
 
-        private final int price;
+        private final int unitPrice;
 
-        Type(int price) {
-            this.price = price;
+        Type(int unitPrice) {
+            this.unitPrice = unitPrice;
         }
 
-        public int getPrice() {
-            return price;
+        public int getUnitPrice() {
+            return unitPrice;
         }
     }
 

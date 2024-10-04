@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 import static uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest.Type.*;
-import static uk.gov.dwp.uc.pairtest.service.TicketServiceImpl.*;
+import static uk.gov.dwp.uc.pairtest.exception.ErrorMessages.*;
 
 @ExtendWith(MockitoExtension.class)
 class TicketServiceImplTest {
@@ -121,6 +121,39 @@ class TicketServiceImplTest {
         verify(ticketPaymentService, times(1)).makePayment(accountId, 90);
         verify(seatReservationService, times(1)).reserveSeat(accountId, 3);
 
+        verifyNoMoreInteractions(ticketValidator, ticketCalculationService, ticketPaymentService, seatReservationService);
+    }
+
+    @Test
+    void shouldThrowException_IfTotalAmountCalculationFails() {
+        when(ticketValidator.isValidAccountId(1L)).thenReturn(true);
+        when(ticketValidator.isValidTotalTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
+        when(ticketValidator.adultPresentInTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
+        when(ticketValidator.sufficientAdultTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
+        when(ticketCalculationService.calculateTotalAmountToPay(any(TicketTypeRequest.class))).thenThrow(NullPointerException.class);
+
+        Exception exception = assertThrows(InvalidPurchaseException.class, () -> {
+            ticketService.purchaseTickets(1L, new TicketTypeRequest(ADULT, 1));
+        });
+
+        assertTrue(exception.getMessage().contains(GENERIC_ERROR));
+        verifyNoMoreInteractions(ticketValidator, ticketCalculationService, ticketPaymentService, seatReservationService);
+    }
+
+    @Test
+    void shouldThrowException_IfTotalSeatsCalculationFails() {
+        when(ticketValidator.isValidAccountId(1L)).thenReturn(true);
+        when(ticketValidator.isValidTotalTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
+        when(ticketValidator.adultPresentInTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
+        when(ticketValidator.sufficientAdultTicketsRequested(any(TicketTypeRequest.class))).thenReturn(true);
+        when(ticketCalculationService.calculateTotalAmountToPay(any(TicketTypeRequest.class))).thenReturn(25);
+        when(ticketCalculationService.calculateTotalSeatsToReserve(any(TicketTypeRequest.class))).thenThrow(NullPointerException.class);
+
+        Exception exception = assertThrows(InvalidPurchaseException.class, () -> {
+            ticketService.purchaseTickets(1L, new TicketTypeRequest(ADULT, 1));
+        });
+
+        assertTrue(exception.getMessage().contains(GENERIC_ERROR));
         verifyNoMoreInteractions(ticketValidator, ticketCalculationService, ticketPaymentService, seatReservationService);
     }
 

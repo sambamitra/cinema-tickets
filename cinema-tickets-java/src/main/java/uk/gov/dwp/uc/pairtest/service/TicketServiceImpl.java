@@ -1,17 +1,18 @@
 package uk.gov.dwp.uc.pairtest.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import thirdparty.paymentgateway.TicketPaymentService;
 import thirdparty.seatbooking.SeatReservationService;
 import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 import uk.gov.dwp.uc.pairtest.validator.TicketValidator;
 
+import static uk.gov.dwp.uc.pairtest.exception.ErrorMessages.*;
+
 public class TicketServiceImpl implements TicketService {
 
-    public static final String INVALID_ACCOUNT_ID = "Invalid account ID supplied";
-    public static final String MAX_TICKET_REQUEST = "More than maximum tickets requested";
-    public static final String NO_ADULT_TICKET = "No adult ticket requested";
-    public static final String NOT_ENOUGH_ADULT_TICKETS = "Insufficient adult tickets for number of infant tickets requested ";
+    private static final Logger logger = LoggerFactory.getLogger(TicketServiceImpl.class);
 
     private final TicketValidator ticketValidator;
     private final TicketCalculationService ticketCalculationService;
@@ -35,18 +36,22 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public void purchaseTickets(Long accountId, TicketTypeRequest... ticketTypeRequests) throws InvalidPurchaseException {
         if (!ticketValidator.isValidAccountId(accountId)) {
+            logger.error(INVALID_ACCOUNT_ID);
             throw new InvalidPurchaseException(INVALID_ACCOUNT_ID);
         }
 
         if (!ticketValidator.isValidTotalTicketsRequested(ticketTypeRequests)) {
+            logger.error(MAX_TICKET_REQUEST);
             throw new InvalidPurchaseException(MAX_TICKET_REQUEST);
         }
 
         if (!ticketValidator.adultPresentInTicketsRequested(ticketTypeRequests)) {
+            logger.error(NO_ADULT_TICKET);
             throw new InvalidPurchaseException(NO_ADULT_TICKET);
         }
 
         if (!ticketValidator.sufficientAdultTicketsRequested(ticketTypeRequests)) {
+            logger.error(NOT_ENOUGH_ADULT_TICKETS);
             throw new InvalidPurchaseException(NOT_ENOUGH_ADULT_TICKETS);
         }
 
@@ -56,8 +61,10 @@ public class TicketServiceImpl implements TicketService {
 
             ticketPaymentService.makePayment(accountId, totalPayment);
             seatReservationService.reserveSeat(accountId, totalSeats);
+            logger.info("Tickets have been successfully purchased");
         } catch (Exception ex) {
-            throw new InvalidPurchaseException("Exception whilst purchasing tickets", ex);
+            logger.error(GENERIC_ERROR);
+            throw new InvalidPurchaseException(GENERIC_ERROR, ex);
         }
     }
 

@@ -23,7 +23,7 @@ public class TicketCalculationServiceImpl implements TicketCalculationService {
         }
         int totalPayment = 0;
         for (TicketTypeRequest ticketTypeRequest : ticketTypeRequests) {
-            totalPayment += ticketTypeRequest.getTicketType().getPrice() * ticketTypeRequest.getNoOfTickets();
+            totalPayment += ticketTypeRequest.getTicketType().getUnitPrice() * ticketTypeRequest.getNoOfTickets();
         }
         return totalPayment;
     }
